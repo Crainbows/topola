@@ -1,6 +1,5 @@
 import { BaseType, Selection } from 'd3-selection';
 import { HierarchyPointNode } from 'd3-hierarchy';
-import { min } from 'd3-array';
 import { Chart, ChartInfo, ChartOptions, Fam, Indi, TreeNode } from './api';
 import { ChartUtil, getChartInfo, linkId, ChartSizeInfo } from './chart-util';
 import { DUMMY_ROOT_NODE_ID, layOutDescendants } from './descendant-chart';
@@ -136,7 +135,7 @@ export class FancyChart<IndiT extends Indi, FamT extends Fam> implements Chart {
     );
 
     const minGeneration =
-      min(backgroundNodes, (node) => node.data.generation) || 0;
+      backgroundNodes.reduce((acc, node) => Math.min(acc, node.data.generation ?? 0), 0);
     const sizeFunction = (node: HierarchyPointNode<TreeNode>) =>
       280 - 180 / Math.sqrt(1 + node.data.generation! - minGeneration);
     {

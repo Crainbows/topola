@@ -1,5 +1,4 @@
 import { HierarchyNode, HierarchyPointNode } from 'd3-hierarchy';
-import { max, min } from 'd3-array';
 import { ChartInfo, ChartOptions, TreeNode as BaseTreeNode } from '../api';
 import { TreeNode, LinkType, otherSideLinkType } from './api';
 import { ChartUtil, getChartInfo } from '../chart-util';
@@ -282,14 +281,17 @@ export class KinshipChartRenderer {
     childNodes: TreeNode[],
     isMin: boolean
   ): number {
-    const extremeFindingFunction = isMin ? min : max;
+    const extremeFindingFunction = isMin ? Math.min : Math.max;
     const dir = isMin ? -1 : 1;
     const childNodesSet = new Set(childNodes);
     return (
-      extremeFindingFunction(
-        parentNode.children!.filter((n) => childNodesSet.has(n.data)),
-        (n) => n.x + (dir * n.data.width!) / 2
-      )! +
+      (parentNode.children ?? [])
+        .filter((n) => childNodesSet.has(n.data))
+        .reduce(
+          (acc, n) =>
+            extremeFindingFunction(acc, n.x + (dir * (n.data.width ?? 0)) / 2),
+          0
+        ) +
       dir * SIBLING_LINK_STARTER_LENGTH
     );
   }

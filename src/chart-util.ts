@@ -4,7 +4,6 @@ import { BaseType, select, Selection } from 'd3-selection';
 import { ChartOptions, TreeNode } from './api';
 import { flextree } from 'd3-flextree';
 import { HierarchyNode, HierarchyPointNode } from 'd3-hierarchy';
-import { max, min } from 'd3-array';
 import 'd3-transition';
 
 type SVGSelection = Selection<BaseType, {}, BaseType, {}>;
@@ -56,21 +55,37 @@ export function getChartInfo(
   nodes: Array<HierarchyPointNode<TreeNode>>
 ): ChartSizeInfo {
   // Calculate chart boundaries.
-  const x0 = min(nodes, (d) => d.x - d.data.width! / 2)! - MARGIN;
-  const y0 = min(nodes, (d) => d.y - d.data.height! / 2)! - MARGIN;
-  const x1 = max(nodes, (d) => d.x + d.data.width! / 2)! + MARGIN;
-  const y1 = max(nodes, (d) => d.y + d.data.height! / 2)! + MARGIN;
-  return { size: [x1 - x0, y1 - y0], origin: [-x0, -y0] };
+  const p = nodes.reduce(
+    (acc, cur) => ({
+      x0: Math.min(acc.x0, cur.x - (cur.data.width ?? 0) / 2),
+      y0: Math.min(acc.y0, cur.y - (cur.data.height ?? 0) / 2),
+      x1: Math.max(acc.x1, cur.x + (cur.data.width ?? 0) / 2),
+      y1: Math.max(acc.y1, cur.y + (cur.data.height ?? 0) / 2),
+    }),
+    { x0: 0, x1: 0, y0: 0, y1: 0 }
+  );
+  const { x0, x1, y0, y1 } = {
+    x0: p.x0 - MARGIN,
+    y0: p.y0 - MARGIN,
+    x1: p.x1 + MARGIN,
+    y1: p.y1 + MARGIN
+  };
+  return { size: [x1 - x0 , y1 - y0], origin: [-x0, -y0] };
 }
 
 export function getChartInfoWithoutMargin(
   nodes: Array<HierarchyPointNode<TreeNode>>
 ): ChartSizeInfo {
   // Calculate chart boundaries.
-  const x0 = min(nodes, (d) => d.x - d.data.width! / 2)!;
-  const y0 = min(nodes, (d) => d.y - d.data.height! / 2)!;
-  const x1 = max(nodes, (d) => d.x + d.data.width! / 2)!;
-  const y1 = max(nodes, (d) => d.y + d.data.height! / 2)!;
+  const { x0, x1, y0, y1 } = nodes.reduce(
+    (acc, cur) => ({
+      x0: Math.min(acc.x0, cur.x - (cur.data.width ?? 0) / 2),
+      y0: Math.min(acc.y0, cur.y - (cur.data.height ?? 0) / 2),
+      x1: Math.max(acc.x1, cur.x + (cur.data.width ?? 0) / 2),
+      y1: Math.max(acc.y1, cur.y + (cur.data.height ?? 0) / 2),
+    }),
+    { x0: 0, x1: 0, y0: 0, y1: 0 }
+  );
   return { size: [x1 - x0, y1 - y0], origin: [-x0, -y0] };
 }
 
@@ -165,10 +180,10 @@ export class ChartUtil {
     const vSizePerDepth = new Map<number, number>();
     root.each((node) => {
       const depth = node.depth;
-      const maxVSize = max([
+      const maxVSize = Math.max(
         this.options.horizontal ? node.data.width! : node.data.height!,
-        vSizePerDepth.get(depth)!,
-      ])!;
+        vSizePerDepth.get(depth) ?? 0,
+      );
       vSizePerDepth.set(depth, maxVSize);
     });
 
@@ -191,14 +206,14 @@ export class ChartUtil {
       .nodeSize((node) => {
         if (this.options.horizontal) {
           const maxChildSize =
-            max(node.children || [], (n) => n.data.width) || 0;
+            (node.children ?? []).reduce((acc, n) => Math.max(acc, n.data.width ?? 0), 0);
           return [
             node.data.height!,
             (maxChildSize + node.data.width!) / 2 + vSpacing,
           ];
         }
         const maxChildSize =
-          max(node.children || [], (n) => n.data.height) || 0;
+          (node.children ?? []).reduce((acc, n) => Math.max(acc, n.data.height ?? 0), 0);
         return [
           node.data.width!,
           (maxChildSize + node.data.height!) / 2 + vSpacing,

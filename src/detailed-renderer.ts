@@ -2,7 +2,6 @@ import { BaseType, select, Selection } from 'd3-selection';
 import { ChartColors } from '.';
 import { FamDetails, IndiDetails } from './data';
 import { formatDateOrRange } from './date-format';
-import { max } from 'd3-array';
 import 'd3-transition';
 import {
   Renderer,
@@ -139,22 +138,22 @@ export class DetailedRenderer extends CompositeRenderer implements Renderer {
     const indi = this.options.data.getIndi(id)!;
     const details = this.getIndiDetails(indi);
 
-    const height = max([
+    const height = Math.max(
       INDI_MIN_HEIGHT + details.length * 14,
       indi.getImageUrl() ? IMAGE_HEIGHT : 0,
-    ])!;
+    );
 
-    const maxDetailsWidth = max(
-      details.map((x) => getLength(x.text, 'details'))
-    )!;
+    const maxDetailsWidth = Math.max(
+      ...details.map((x) => getLength(x.text, 'details'))
+    );
     const width =
-      max([
+      Math.max(
         maxDetailsWidth + 22,
         getLength(indi.getFirstName() || '', 'name') + 8,
         getLength(indi.getLastName() || '', 'name') + 8,
         getLength(id, 'id') + 32,
         INDI_MIN_WIDTH,
-      ])! + (indi.getImageUrl() ? IMAGE_WIDTH : 0);
+      )! + (indi.getImageUrl() ? IMAGE_WIDTH : 0);
     return [width, height];
   }
 
@@ -162,11 +161,11 @@ export class DetailedRenderer extends CompositeRenderer implements Renderer {
     const fam = this.options.data.getFam(id)!;
     const details = this.getFamDetails(fam);
 
-    const height = max([10 + details.length * 14, FAM_MIN_HEIGHT])!;
-    const maxDetailsWidth = max(
-      details.map((x) => getLength(x.text, 'details'))
-    )!;
-    const width = max([maxDetailsWidth + 22, FAM_MIN_WIDTH])!;
+    const height = Math.max(10 + details.length * 14, FAM_MIN_HEIGHT);
+    const maxDetailsWidth = Math.max(
+      ...details.map((x) => getLength(x.text, 'details'))
+    );
+    const width = Math.max(maxDetailsWidth + 22, FAM_MIN_WIDTH);
     return [width, height];
   }
 
@@ -182,11 +181,11 @@ export class DetailedRenderer extends CompositeRenderer implements Renderer {
           const result: OffsetIndi[] = [];
           const famXOffset =
             !this.options.horizontal && node.data.family
-              ? max([-getFamPositionVertical(node.data), 0])!
+              ? Math.max(-getFamPositionVertical(node.data), 0)
               : 0;
           const famYOffset =
             this.options.horizontal && node.data.family
-              ? max([-getFamPositionHorizontal(node.data), 0])!
+              ? Math.max(-getFamPositionHorizontal(node.data), 0)
               : 0;
           if (node.data.indi) {
             result.push({
@@ -360,9 +359,9 @@ export class DetailedRenderer extends CompositeRenderer implements Renderer {
     if (this.options.horizontal) {
       return `translate(${
         (node.indi && node.indi.width) || node.spouse!.width
-      }, ${max([getFamPositionHorizontal(node), 0])})`;
+      }, ${Math.max(getFamPositionHorizontal(node), 0)})`;
     }
-    return `translate(${max([getFamPositionVertical(node), 0])}, ${
+    return `translate(${Math.max(getFamPositionVertical(node), 0)}, ${
       (node.indi && node.indi.height) || node.spouse!.height
     })`;
   }
@@ -459,7 +458,7 @@ export class DetailedRenderer extends CompositeRenderer implements Renderer {
       details.set(node.indi.id, detailsList);
     });
 
-    const maxDetails = max(Array.from(details.values(), (v) => v.length))!;
+    const maxDetails = Math.max(...Array.from(details.values(), (v) => v.length));
 
     // Render details.
     for (let i = 0; i < maxDetails; ++i) {
@@ -563,7 +562,7 @@ export class DetailedRenderer extends CompositeRenderer implements Renderer {
       const detailsList = this.getFamDetails(fam);
       details.set(famId, detailsList);
     });
-    const maxDetails = max(Array.from(details.values(), (v) => v.length))!;
+    const maxDetails = Math.max(...Array.from(details.values(), (v) => v.length));
 
     // Render details.
     for (let i = 0; i < maxDetails; ++i) {

@@ -1,5 +1,4 @@
 import { HierarchyNode } from 'd3-hierarchy';
-import { max } from 'd3-array';
 import { TreeEntry, TreeNode } from './api';
 
 /**
@@ -34,10 +33,10 @@ export abstract class CompositeRenderer {
       }
 
       const depth = node.depth;
-      const maxIndiVSize = max([
+      const maxIndiVSize = Math.max(
         getIndiVSize(node.data, !!this.options.horizontal),
-        indiVSizePerDepth.get(depth)!,
-      ])!;
+        indiVSizePerDepth.get(depth) ?? 0,
+      );
       indiVSizePerDepth.set(depth, maxIndiVSize);
     });
 
@@ -71,7 +70,7 @@ export abstract class CompositeRenderer {
       const x =
         -node.width! / 2 + getIndiVSize(node, this.options.horizontal) / 2;
       const famYOffset = node.family
-        ? max([-getFamPositionHorizontal(node), 0])!
+        ? Math.max(-getFamPositionHorizontal(node), 0)
         : 0;
       const y =
         -(node.indi && node.spouse ? node.height! / 2 - node.indi.height! : 0) +
@@ -79,7 +78,7 @@ export abstract class CompositeRenderer {
       return [x, y];
     }
     const famXOffset = node.family
-      ? max([-getFamPositionVertical(node), 0])
+      ? Math.max(-getFamPositionVertical(node), 0)
       : 0;
     const x =
       -(node.indi && node.spouse ? node.width! / 2 - node.indi.width! : 0) +
@@ -158,7 +157,7 @@ function getHSize(node: TreeNode, horizontal: boolean): number {
   }
   const indiHSize =
     (node.indi ? node.indi.width! : 0) + (node.spouse ? node.spouse.width! : 0);
-  return max([indiHSize, node.family ? node.family.width! : 0])!;
+  return Math.max(indiHSize, node.family ? node.family.width! : 0);
 }
 
 function getFamVSize(node: TreeNode, horizontal: boolean): number {
@@ -171,15 +170,15 @@ function getFamVSize(node: TreeNode, horizontal: boolean): number {
 /** Returns the vertical size of individual boxes. */
 function getIndiVSize(node: TreeNode, horizontal: boolean): number {
   if (horizontal) {
-    return max([
+    return Math.max(
       node.indi ? node.indi.width! : 0,
       node.spouse ? node.spouse.width! : 0,
-    ])!;
+    );
   }
-  return max([
+  return Math.max(
     node.indi ? node.indi.height! : 0,
     node.spouse ? node.spouse.height! : 0,
-  ])!;
+  );
 }
 
 /** Returns the vertical size. */

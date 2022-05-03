@@ -2,7 +2,6 @@ import { getAncestorsTree } from './ancestor-chart';
 import { HierarchyNode, HierarchyPointNode } from 'd3-hierarchy';
 import { IdGenerator } from './id-generator';
 import { layOutDescendants } from './descendant-chart';
-import { max, min } from 'd3-array';
 import {
   Chart,
   ChartInfo,
@@ -234,16 +233,16 @@ export class RelativesChart<IndiT extends Indi, FamT extends Fam>
         } else if (data.left) {
           parentNode.x =
             nodeX +
-            min([
+            Math.min(
               nodeWidth / 2 -
                 parentData.width! / 2 -
                 spouseWidth / 2 -
                 H_SPACING,
               middleX,
-            ])!;
+            );
         } else {
           parentNode.x =
-            nodeX + max([parentData.width! / 2 - nodeWidth / 2, middleX])!;
+            nodeX + Math.max(parentData.width! / 2 - nodeWidth / 2, middleX);
         }
       }
 
@@ -291,14 +290,14 @@ export class RelativesChart<IndiT extends Indi, FamT extends Fam>
             nodeWidth / 2 + parentData.width! / 2 - spouseWidth + H_SPACING / 2;
         } else if (data.left) {
           parentNode.x =
-            nodeX + min([nodeWidth / 2 - parentData.width! / 2, middleX])!;
+            nodeX + Math.min(nodeWidth / 2 - parentData.width! / 2, middleX);
         } else {
           parentNode.x =
             nodeX +
-            max([
+            Math.max(
               parentData.width! / 2 - nodeWidth / 2 + indiWidth / 2 + H_SPACING,
               middleX,
-            ])!;
+            );
         }
       }
     });
